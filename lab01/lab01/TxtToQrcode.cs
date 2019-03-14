@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.IO;
 using System.Drawing;
 using Gma.QrCodeNet.Encoding.Windows.Render;
@@ -13,7 +9,7 @@ namespace lab01
 {
 
 
-        class TxtToQrcode
+    class TxtToQrcode
         {    // 摘要：
              //      将str字符串转化成QRCode,以bmp文件格式存储
             public static void TxtToPNG(string path)
@@ -25,7 +21,6 @@ namespace lab01
                     Console.ResetColor();
                     return;
                 }
-                
                 StreamReader reader = new StreamReader(path);
                 int line = 1;
                 // 摘要：
@@ -89,6 +84,7 @@ namespace lab01
                         {
                             Console.BackgroundColor = ConsoleColor.White;
                             Console.Write("  ");
+                            Console.ResetColor();
                         }
                         if (!qrc.Matrix[i, j])
                         {
@@ -101,7 +97,6 @@ namespace lab01
                             Console.BackgroundColor = ConsoleColor.White;
                             Console.Write("  ");
                         }
-
                     }
                     Console.ResetColor();
                     Console.WriteLine();
