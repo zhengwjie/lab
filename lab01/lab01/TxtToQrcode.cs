@@ -28,6 +28,8 @@ namespace lab01
                 while (reader.Peek() > 0)
                 {
                     String str = reader.ReadLine();
+                    //摘要：
+                    //    判断字符串是否符合生成二维码的要求
                     if (str.Length < 4)
                     {
                         Console.ForegroundColor = ConsoleColor.Red;
@@ -42,11 +44,17 @@ namespace lab01
                         Console.ResetColor();
                         continue;
                     }
+                    //摘要：
+                    //    生成二维码
                     QrEncoder qrEncoder = new QrEncoder();
                     QrCode qr = qrEncoder.Encode(str);
+                    //摘要：
+                    //    保存文件路径
                     string dir = path.Substring(0, path.LastIndexOf('/')) + "/png/";
                     String fileName = dir+line.ToString("000") + str.Substring(0, 4) + ".png";
                     GraphicsRenderer renderer = new GraphicsRenderer(new FixedModuleSize(5, QuietZoneModules.Two), Brushes.Black, Brushes.White);
+                    //摘要：
+                    //    将二维码写入文件流，并以png格式保存
                     using (MemoryStream ms = new MemoryStream())
                     {
                         renderer.WriteToStream(qr.Matrix, ImageFormat.Png, ms);
@@ -56,17 +64,25 @@ namespace lab01
                     line++;
                 }
             }
+            //摘要:
+            //    将字符串生成二维码,并输出到控制台
             public static void StringToConsole(String str)
             {
-                QrEncoder qre = new QrEncoder(ErrorCorrectionLevel.M);
-                QrCode qrc = qre.Encode(str);
-                if (qrc.Matrix.Height >= 28)
+                //摘要：
+                //    判断字符串是否符合要求
+                if (str.Length >= 25)
                 {
                     Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine("命令行参数太多！");
                     Console.ResetColor();
                     return;
                 }
+                //摘要：
+                //    生成二维码
+                QrEncoder qre = new QrEncoder(ErrorCorrectionLevel.M);
+                QrCode qrc = qre.Encode(str);
+                //摘要：
+                //    将二维码输出到控制台
                 for (int i = 0; i < qrc.Matrix.Height; i++)
                 {
                     if (i == 0)
