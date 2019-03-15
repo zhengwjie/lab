@@ -7,6 +7,7 @@ using System.IO;
 using Gma.QrCodeNet.Encoding;
 using Gma.QrCodeNet.Encoding.Windows.Render;
 using System.Drawing;
+using System.Drawing.Imaging;
 namespace lab01
 {
     
@@ -16,6 +17,8 @@ namespace lab01
 
         static void Main(String[] args)
         {
+            String pa = @"F:\C#\lab01\test.xlsx";
+            TxtToQrcode.ExcelToXMLToQrcode(pa);
             int k=0;
             //摘要:
             //    method判断将二维码输出到控制台还是保存在文件中
@@ -30,7 +33,7 @@ namespace lab01
             }
             //摘要:
             //    以png格式保存在文件中
-            if(method)
+            if(method&&k<args.Length)
             {
                 TxtToQrcode.TxtToPNG(args[k]);
             }
@@ -40,7 +43,7 @@ namespace lab01
             {
                 string str = "";
                 for (int i = 0; i < args.Length - 1; i++)
-                    str += (args[i] + " ");
+                    str += args[i] + " ";
                 str += args[args.Length - 1];
                 TxtToQrcode.StringToConsole(str);
             }
