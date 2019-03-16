@@ -7,10 +7,12 @@ using System.Drawing.Imaging;
 using System.Data;
 using System.Data.OleDb;
 using System.Xml;
+using Microsoft.Office.Interop.Excel;
+using System.Text;
+using System.Data.SqlClient;
+using MySql.Data.MySqlClient;
 namespace lab01
 {
-
-
     class TxtToQrcode
     {
 
@@ -45,7 +47,7 @@ namespace lab01
                 {
                     //摘要：
                     //    保存文件路径
-                    string dir = path.Substring(0, path.LastIndexOf('\\')) + @"\png\";
+                    string dir = path.Substring(0, path.LastIndexOf('\\')) + @"\txt\";
                     if (!Directory.Exists(dir))
                     {
                         Directory.CreateDirectory(dir);
@@ -133,7 +135,7 @@ namespace lab01
             OleDbConnection conn = new OleDbConnection(strConn);
             conn.Open();
             DataSet ds = new DataSet("dataset");
-            DataTable schemaTable = conn.GetOleDbSchemaTable(System.Data.OleDb.OleDbSchemaGuid.Tables, null);
+            System.Data.DataTable schemaTable = conn.GetOleDbSchemaTable(System.Data.OleDb.OleDbSchemaGuid.Tables, null);
             String tableName = "dh";int k = 2;
             while (true)
             {
@@ -159,7 +161,12 @@ namespace lab01
             //摘要：
             //    在Excel文件所在目录下，创建excelToPng.png的文件
             //    存储Qrcode
-            String filename = path.Substring(0, path.LastIndexOf('\\')) +@"\excelToPng.png";
+            String dir = path.Substring(0, path.LastIndexOf('\\'))+@"\excel\";
+            if(!Directory.Exists(dir))
+            {
+                Directory.CreateDirectory(dir);
+            }
+            String filename =dir +@"\xml.png";
             TxtToQrcode.StringToPng(str, filename);
         }
         /// <summary>
@@ -189,18 +196,176 @@ namespace lab01
                 im.Save(filename, ImageFormat.Png);
             }
         }
-
         /// <summary>
         /// 将Excel文件中的数据以Json格式转换成字符串，
         /// 编码成QrCode
         /// 存储在json文件夹下的png图像中
+        /// 本次使用Microsoft.Office.Interop.Encoding的扩展
         /// </summary>
         /// <param name="path">Excel文件目录</param>
         public static void ExcelToJsonToQrcode(String path)
         {
-           
+            object oMisiog = System.Reflection.Missing.Value;
+            //摘要：
+            //     创建Excel应用程序
+            Application application = new Application();
+            //摘要：
+            //    从Excel文件中读取工作簿，并创建对象
+            Workbook workbook = application.Workbooks.Open(path, oMisiog, oMisiog, oMisiog, oMisiog, oMisiog, oMisiog, oMisiog
+                , oMisiog, oMisiog, oMisiog, oMisiog, oMisiog, oMisiog, oMisiog);
+            //摘要：
+            //     创建工作表集合
+            Sheets sheets = workbook.Worksheets;
+            //摘要：
+            //     获取工作表1
+            Worksheet worksheet = (Worksheet)sheets.get_Item(1);
+            if (worksheet == null)
+                return;
+            String cellContent;
+            int iRowCount = worksheet.UsedRange.Rows.Count;
+            int iColCount = worksheet.UsedRange.Columns.Count;
+            Range range;
+            //摘要：
+            //     负责列头Start
+            DataColumn dc;
+            int columnID = 1;
+            range = worksheet.Cells[1, 1];
+            System.Data.DataTable dt = new System.Data.DataTable();
+            while(range.Text.ToString().Trim()!="")
+            {
+                dc = new DataColumn();
+                dc.DataType = System.Type.GetType("System.String");
+                dc.ColumnName = range.Text.ToString().Trim();
+                dt.Columns.Add(dc);
+                range = worksheet.Cells[1, ++columnID];
+            }
+            //摘要：
+            //     从将每一行的信息写入DataTable中
+            for(int i=2;i<=iRowCount;i++)
+            {
+                DataRow dr = dt.NewRow();
+                for(int j=1;j<=iColCount;j++)
+                {
+                    range = worksheet.Cells[i, j];
+                    cellContent = range.Value2==null? " ":range.Text.ToString().Trim();
+                    dr[j - 1] = cellContent;
+                }
+                dt.Rows.Add(dr);
+            }
+            //摘要：
+            //    释放对象所占内存
+            workbook.Close(false, oMisiog, oMisiog);
+            System.Runtime.InteropServices.Marshal.ReleaseComObject(workbook);
+            workbook = null;
+            application.Workbooks.Close();
+            application.Quit();
+            System.Runtime.InteropServices.Marshal.ReleaseComObject(application);
+            application = null;
+            //摘要：
+            //    将DataTable数据转换成Json格式字符串
+            String s =TxtToQrcode.DataTableToJson(dt);
+            String dir = path.Substring(0, path.LastIndexOf('\\'))+"\\excel\\";
+            if (!Directory.Exists(dir))
+                Directory.CreateDirectory(dir);
+            String fileName = dir + @"\json.png";
+            TxtToQrcode.StringToPng(s, fileName);
+        }
+        /// <summary>
+        /// 将DataTable数据转换成Json格式字符串
+        /// </summary>
+        /// <param name="dt">DataTable</param>
+        /// <returns>Json格式字符串</returns>
+        public static String DataTableToJson(System.Data.DataTable dt)
+        {
+            var JsonStr = new StringBuilder();
+            if(dt.Columns.Count>0)
+            {
+                JsonStr.Append("[");
+                for(int i=0;i<dt.Rows.Count;i++)
+                {
+                    JsonStr.Append("{");
+                    for(int j=0;j<dt.Columns.Count;j++)
+                    {
+                        String str = "\"" + dt.Columns[j].ColumnName.ToString() + "\":";
+                        JsonStr.Append(str + "\"" + dt.Rows[i][j].ToString() + "\"");
+                        if (j != dt.Columns.Count - 1)
+                            JsonStr.Append(",");
+                    }
+                    JsonStr.Append("}");
+                    if (i != dt.Rows.Count - 1)
+                        JsonStr.Append(",\n");
+                }
+                JsonStr.Append("]\n");
+            }
+            return JsonStr.ToString();
         }
 
+        /// <summary>
+        /// 对Mysql数据库进行操作
+        /// 生成以Xml格式的字符串，并生成二维码，存储在F:/mysql文件夹下的xml.png中
+        /// </summary>
+        /// <param name="str">连接数据库所需字符串</param>
+        /// <param name="command">对数据库操作的命令</param>
+        public static void MysqlToxmlQrcode(String str,String command)
+        {
+            MySqlConnection sqlConnection = new MySqlConnection(str);
+            MySqlCommand sqlCommand = new MySqlCommand(command, sqlConnection);
+            sqlConnection.Open();
+            MySqlDataAdapter sqlDataAdapter = new MySqlDataAdapter(sqlCommand);
+            DataSet ds = new DataSet();
+            sqlDataAdapter.Fill(ds);
+            String xml = ds.GetXml().ToString();
+            var s1 = new StringBuilder();
+            for(int i=0;i<xml.Length-1;i++)
+            {
+                if(xml[i]=='>'&&xml[i+1]=='<')
+                {
+                    s1.Append('\n');
+                }
+                s1.Append(xml[i]);
+            }
+            s1.Append(xml[xml.Length - 1]);
+            s1.Append('\n');
+            xml = s1.ToString();
+            String fileName = "F:\\c#\\lab01\\mysql";
+            if(!Directory.Exists(fileName))
+            {
+                Directory.CreateDirectory(fileName);
+            }
+            TxtToQrcode.StringToPng(xml, fileName + "\\xml.png");
+        }
+
+        /// <summary>
+        /// 对Mysql数据库进行操作
+        /// 生成以Json格式的字符串，并生成二维码，存储在F:/mysql文件夹下的json.png中
+        /// </summary>
+        /// <param name="str">连接数据库所需字符串</param>
+        /// <param name="command">对数据库操作的命令</param>
+        public static void MysqlToJsonQrcode(string str,string command)
+        {
+            var conn = new MySqlConnection(str);
+            MySqlCommand mySql = new MySqlCommand(command, conn);
+            conn.Open();
+            MySqlDataAdapter mySqlDataAdapter = new MySqlDataAdapter(mySql);
+            DataSet ds = new DataSet();
+            mySqlDataAdapter.Fill(ds);
+            if(ds.Tables.Count>0)
+            {
+                int i = 0;
+                while(i<ds.Tables.Count)
+                {
+                    System.Data.DataTable st = ds.Tables[i];
+                    String str1 = TxtToQrcode.DataTableToJson(st);
+                    if(!Directory.Exists("F:\\c#\\lab01\\mysql"))
+                    {
+                        Directory.CreateDirectory("F:\\c#\\lab01\\mysql");
+                    }
+                    String s = string.Format("F:\\c#\\lab01\\mysql\\json{0}.png", i);
+                    TxtToQrcode.StringToPng(str1, s);
+                    i++;
+                }
+            }
+        }
     }
 
 

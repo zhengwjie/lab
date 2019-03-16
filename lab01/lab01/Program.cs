@@ -17,8 +17,6 @@ namespace lab01
 
         static void Main(String[] args)
         {
-            String pa = @"F:\C#\lab01\test.xlsx";
-            TxtToQrcode.ExcelToXMLToQrcode(pa);
             int k=0;
             //摘要:
             //    method判断将二维码输出到控制台还是保存在文件中
@@ -31,11 +29,33 @@ namespace lab01
                     method = true;
                 }
             }
-            //摘要:
-            //    以png格式保存在文件中
+            //摘要：
+            //     判断输入的文件是Excel,txt
+            //     
             if(method&&k<args.Length)
             {
-                TxtToQrcode.TxtToPNG(args[k]);
+                String[] str = args[k].Split('.');
+                String last = str[str.Length - 1];
+                if (last == "txt")
+                    TxtToQrcode.TxtToPNG(args[k]);
+                else if (last == "xlsx")
+                {
+                    TxtToQrcode.ExcelToJsonToQrcode(args[k]);
+                    TxtToQrcode.ExcelToXMLToQrcode(args[k]);
+                }
+                else if(args[k]=="mysql")
+                {
+                    TxtToQrcode.MysqlToxmlQrcode("server=localhost;Initial Catalog=chap1;User ID=root;Password=123456",
+                "select * from student;select * from students");
+                    TxtToQrcode.MysqlToJsonQrcode("server=localhost;Initial Catalog=chap1;User ID=root;Password=123456",
+                "select * from students;select * from student");
+                }
+                else
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("不支持的文件格式！！！");
+                    Console.ResetColor();
+                }
             }
             //摘要:
             //    输出到控制台中
