@@ -57,6 +57,7 @@ namespace lab01
                 }
                 line++;
             }
+            Console.WriteLine("已完成将txt文本信息转换为Qrcode并存入F:\\c#\\lab01\\txt文件夹");
         }
             //摘要:
             //    将字符串生成二维码,并输出到控制台
@@ -168,6 +169,7 @@ namespace lab01
             }
             String filename =dir +@"\xml.png";
             TxtToQrcode.StringToPng(str, filename);
+            Console.WriteLine("已完成将Excel信息转换为Xml字符串并存入F:\\c#\\lab01\\excel文件夹");
         }
         /// <summary>
         /// 将字符串变成QrCode，以png格式存储在文件中
@@ -269,6 +271,7 @@ namespace lab01
                 Directory.CreateDirectory(dir);
             String fileName = dir + @"\json.png";
             TxtToQrcode.StringToPng(s, fileName);
+            Console.WriteLine("已完成将Excel文件信息转换为Json字符串并存入F:\\c#\\lab01\\excel文件夹");
         }
         /// <summary>
         /// 将DataTable数据转换成Json格式字符串
@@ -333,6 +336,7 @@ namespace lab01
                 Directory.CreateDirectory(fileName);
             }
             TxtToQrcode.StringToPng(xml, fileName + "\\xml.png");
+            Console.WriteLine("已完成将Mysql数据库查询信息转换为Xml字符串并存入F:\\c#\\lab01\\mysql文件夹");
         }
 
         /// <summary>
@@ -362,9 +366,11 @@ namespace lab01
                     }
                     String s = string.Format("F:\\c#\\lab01\\mysql\\json{0}.png", i);
                     TxtToQrcode.StringToPng(str1, s);
+                    
                     i++;
                 }
             }
+            Console.WriteLine("已完成将Mysql数据库查询信息转换为Json字符串并存入F:\\c#\\lab01\\mysql文件夹");
         }
     }
 
