@@ -9,7 +9,6 @@ using System.Data.OleDb;
 using System.Xml;
 using Microsoft.Office.Interop.Excel;
 using System.Text;
-using System.Data.SqlClient;
 using MySql.Data.MySqlClient;
 namespace lab01
 {
@@ -368,6 +367,4 @@ namespace lab01
                 System.Environment.CurrentDirectory + "\\mysql");
         }
     }
-
-
 }
