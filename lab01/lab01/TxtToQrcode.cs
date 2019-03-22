@@ -61,7 +61,7 @@ namespace lab01
             if (str.Length >= 25)
                 {
                     Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine("命令行参数太多！");
+                    Console.WriteLine("命令行参数太长！");
                     Console.ResetColor();
                     return;
                 }
@@ -130,16 +130,11 @@ namespace lab01
             conn.Open();
             DataSet ds = new DataSet("dataset");
             System.Data.DataTable schemaTable = conn.GetOleDbSchemaTable(System.Data.OleDb.OleDbSchemaGuid.Tables, null);
-            String tableName = "dh";int k = 2;
-            while (true)
-            {
-                tableName = schemaTable.Rows[0][k].ToString().Trim();k++;
-                if (tableName == "TABLE")
-                    break;
-                string strExcel = "select * from[" + tableName + "]";
-                OleDbDataAdapter oleDbDataAdapter = new OleDbDataAdapter(strExcel, conn);
-                oleDbDataAdapter.Fill(ds);
-            }
+            String tableName = "dh";
+            tableName = schemaTable.Rows[0][2].ToString().Trim();
+            string strExcel = "select * from[" + tableName + "]";
+            OleDbDataAdapter oleDbDataAdapter = new OleDbDataAdapter(strExcel, conn);
+            oleDbDataAdapter.Fill(ds);
             StringWriter sr = new StringWriter();
             XmlTextWriter xw = new XmlTextWriter(sr);
             ds.WriteXml(xw);
