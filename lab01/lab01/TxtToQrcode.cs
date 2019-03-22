@@ -332,7 +332,6 @@ namespace lab01
             Console.WriteLine("已完成将Mysql数据库查询信息转换为Xml字符串并存入{0}文件夹",
                 System.Environment.CurrentDirectory+"\\"+fileName);
         }
-
         /// <summary>
         /// 对Mysql数据库进行操作
         /// 生成以Json格式的字符串，并生成二维码，存储在mysql文件夹下的json.png中
